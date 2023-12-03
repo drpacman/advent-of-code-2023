@@ -48,7 +48,28 @@ const Round = struct {
     blue: u8 = 0,
 };
 
-const Game = struct { rounds: []Round };
+const Game = struct {
+    rounds: []Round,
+
+    fn is_valid(self: Game) bool {
+        for (self.rounds) |round| {
+            if (round.red > 12 or round.green > 13 or round.blue > 14) return false;
+        }
+        return true;
+    }
+
+    fn power(self: Game) u64 {
+        var max_red: u64 = 0;
+        var max_green: u64 = 0;
+        var max_blue: u64 = 0;
+        for (self.rounds) |round| {
+            if (round.red > max_red) max_red = round.red;
+            if (round.green > max_green) max_green = round.green;
+            if (round.blue > max_blue) max_blue = round.blue;
+        }
+        return max_red * max_green * max_blue;
+    }
+};
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -57,25 +78,16 @@ pub fn main() !void {
 
     const games = try parseFile(allocator);
     var part1: u32 = 0;
-    for (games, 1..) |game, index| next_game: {
-        for (game.rounds) |round| {
-            if (round.red > 12 or round.green > 13 or round.blue > 14) break :next_game;
+    for (games, 1..) |game, index| {
+        if (game.is_valid()) {
+            part1 += @intCast(index);
         }
-        part1 += @intCast(index);
     }
     std.debug.print("Part 1 - {d}\n", .{part1});
 
     var part2: u64 = 0;
     for (games) |game| {
-        var max_red: u64 = 0;
-        var max_green: u64 = 0;
-        var max_blue: u64 = 0;
-        for (game.rounds) |round| {
-            if (round.red > max_red) max_red = round.red;
-            if (round.green > max_green) max_green = round.green;
-            if (round.blue > max_blue) max_blue = round.blue;
-        }
-        part2 += max_red * max_green * max_blue;
+        part2 += game.power();
     }
     std.debug.print("Part 2 - {d}\n", .{part2});
 }

@@ -16,7 +16,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     comptime var counter: usize = 1;
-    inline while (counter <= 2) : (counter += 1) {
+    inline while (counter <= 3) : (counter += 1) {
         build_day(b, target, optimize, counter);
     }
 }
