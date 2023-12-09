@@ -32,11 +32,11 @@ fn part1(maze: Maze) u32 {
 const CycleMarker = struct { start_id: []const u8, current: []const u8, instruction_loop: u64 };
 
 fn lcm(first: u64, second: u64) u64 {
-    var result: u64 = 1;
-    var i: u64 = 2;
     var a: u64 = first;
     var b: u64 = second;
-    while (a != 1 and b != 1) {
+    var result: u64 = 1;
+    var i: u64 = 2;
+    while (a != 1 or b != 1) {
         if (a % i == 0 or b % i == 0) {
             result *= i;
             if (a % i == 0) a /= i;
@@ -64,6 +64,7 @@ fn part2(maze: Maze, allocator: std.mem.Allocator) !u64 {
         for (markers) |*marker| {
             if (marker.*.current[2] == 'Z') {
                 marker.*.instruction_loop = loop_count;
+                std.debug.print("Found loop for {s} - {d}\n", .{ marker.*.start_id, marker.*.instruction_loop });
             }
         }
 
@@ -80,7 +81,6 @@ fn part2(maze: Maze, allocator: std.mem.Allocator) !u64 {
                 for (maze.nodes) |node| {
                     if (!std.mem.eql(u8, node.id, marker.*.current)) continue;
                     marker.*.current = if (maze.directions[i] == 'L') node.left else node.right;
-                    // std.debug.print("marker {s} moved to {s}\n", .{ marker.*.start_id, marker.*.current });
                     break;
                 }
             }
@@ -91,8 +91,11 @@ fn part2(maze: Maze, allocator: std.mem.Allocator) !u64 {
 
     var lcm_result: u64 = 1;
     for (markers) |marker| {
-        if (lcm_result == 1) lcm_result = marker.instruction_loop;
-        lcm_result = lcm(lcm_result, marker.instruction_loop);
+        if (lcm_result == 1) {
+            lcm_result = marker.instruction_loop;
+        } else {
+            lcm_result = lcm(lcm_result, marker.instruction_loop);
+        }
     }
     return lcm_result;
 }
