@@ -64,7 +64,6 @@ fn part2(maze: Maze, allocator: std.mem.Allocator) !u64 {
         for (markers) |*marker| {
             if (marker.*.current[2] == 'Z') {
                 marker.*.instruction_loop = loop_count;
-                std.debug.print("Found loop for {s} - {d}\n", .{ marker.*.start_id, marker.*.instruction_loop });
             }
         }
 
