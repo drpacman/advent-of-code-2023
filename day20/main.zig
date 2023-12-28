@@ -194,7 +194,7 @@ fn part2(modules: std.StringHashMap(Module), allocator: std.mem.Allocator) !u64 
     } else return Error.MissingTarget;
 
     var i: u64 = 1;
-    while (i < 4000) : (i += 1) {
+    while (true) : (i += 1) {
         _ = try press_button(modules, allocator, i);
         const module = modules.get(nand_to_monitor).?;
         const result = module.module_type.nand.get_state_cycle();
