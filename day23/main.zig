@@ -33,32 +33,32 @@ fn parse_file(path: []const u8, allocator: std.mem.Allocator) ![][]const u8 {
     return lines.toOwnedSlice();
 }
 
-fn walk(grid: [][]const u8, allocator: std.mem.Allocator, no_slopes: bool) ![]Step {
+fn part1(grid: [][]const u8, allocator: std.mem.Allocator) !u64 {
     const start = try allocator.create(Step);
     start.* = .{ .direction = Direction.Down, .pos = [2]u16{ 0, 1 }, .prev = null, .len = 0 };
 
     var walks = std.ArrayList(*Step).init(allocator);
     try walks.append(start);
-    var completed_paths = std.ArrayList(Step).init(allocator);
+    var max: u64 = 0;
     walks: while (walks.items.len > 0) {
         const current_step = walks.pop();
         const y = current_step.pos[0];
         const x = current_step.pos[1];
         // found the exit
         if (y == grid.len - 1 and x == grid[y].len - 2) {
-            try completed_paths.append(current_step.*);
+            max = @max(max, current_step.len);
             continue :walks;
         }
 
         var dirs = std.ArrayList(Direction).init(allocator);
         defer dirs.deinit();
-        if (no_slopes and grid[y][x] == '>') {
+        if (grid[y][x] == '>') {
             try dirs.append(Direction.Right);
-        } else if (no_slopes and grid[y][x] == '<') {
+        } else if (grid[y][x] == '<') {
             try dirs.append(Direction.Left);
-        } else if (no_slopes and grid[y][x] == '^') {
+        } else if (grid[y][x] == '^') {
             try dirs.append(Direction.Up);
-        } else if (no_slopes and grid[y][x] == 'v') {
+        } else if (grid[y][x] == 'v') {
             try dirs.append(Direction.Down);
         } else {
             if (current_step.direction != Direction.Down) try dirs.append(Direction.Up);
@@ -86,7 +86,7 @@ fn walk(grid: [][]const u8, allocator: std.mem.Allocator, no_slopes: bool) ![]St
             }
         }
     }
-    return completed_paths.toOwnedSlice();
+    return max;
 }
 
 // every junction is a node
@@ -197,18 +197,18 @@ fn grid_to_graph(grid: [][]const u8, allocator: std.mem.Allocator) !Graph {
     return Graph{ .nodes = nodes_array, .start_node = start, .end_node = end };
 }
 
-fn walk_graph(graph: Graph, allocator: std.mem.Allocator) ![]NodePath {
+fn part2(graph: Graph, allocator: std.mem.Allocator) !u64 {
     const start = try allocator.create(NodePath);
     start.* = .{ .node = graph.start_node, .prev = null, .len = 0 };
 
     var walks = std.ArrayList(*NodePath).init(allocator);
     try walks.append(start);
-    var completed_paths = std.ArrayList(NodePath).init(allocator);
+    var max_path_len: u64 = 0;
     walks: while (walks.items.len > 0) {
         const current_node_path = walks.pop();
         // found the exit
         if (current_node_path.node.equals(graph.end_node.*)) {
-            try completed_paths.append(current_node_path.*);
+            max_path_len = @max(max_path_len, current_node_path.len);
             continue :walks;
         }
 
@@ -220,30 +220,16 @@ fn walk_graph(graph: Graph, allocator: std.mem.Allocator) ![]NodePath {
             }
         }
     }
-    return completed_paths.toOwnedSlice();
+    return max_path_len;
 }
+
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
     const grid = try parse_file("day23/input.txt", allocator);
-    const all_walks = try walk(grid, allocator, true);
-    var max: u32 = 0;
-    for (all_walks) |w| {
-        const len = w.len;
-        if (len > max) {
-            max = len;
-        }
-    }
-    std.debug.print("Part 1 - {d}\n", .{max});
+    std.debug.print("Part 1 - {d}\n", .{try part1(grid, allocator)});
 
     const graph = try grid_to_graph(grid, allocator);
-    const all_paths = try walk_graph(graph, allocator);
-    for (all_paths) |path| {
-        const len = path.len;
-        if (len > max) {
-            max = len;
-        }
-    }
-    std.debug.print("Part 2 - {d}\n", .{max});
+    std.debug.print("Part 2 - {d}\n", .{try part2(graph, allocator)});
 }

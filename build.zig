@@ -16,7 +16,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     comptime var counter: usize = 1;
-    inline while (counter <= 22) : (counter += 1) {
+    inline while (counter <= 23) : (counter += 1) {
         build_day(b, target, optimize, counter);
     }
 }
@@ -31,9 +31,9 @@ fn build_day(b: *std.Build, target: std.zig.CrossTarget, optimize: std.builtin.O
         .optimize = optimize,
     });
     exe.addIncludePath(.{ .cwd_relative = "lib/regez" });
-
     b.installArtifact(exe);
-    const install_step = b.step(day_name, "Build specified day");
+
+    const install_step = b.step(b.fmt("install_{s}", .{day_name}), "Build specified day");
     install_step.dependOn(&exe.step);
 
     const run_cmd = b.addRunArtifact(exe);
