@@ -61,8 +61,10 @@ fn part1(lines: []Line, min: f128, max: f128) !u64 {
     return total;
 }
 
+// From insight of the approach from Reddit post: https://www.reddit.com/r/adventofcode/comments/18pnycy/comment/kesvc7t
 // Uses Cramers rule to solve set of equations:
 // See https://ua.pressbooks.pub/collegealgebraformanagerialscience/chapter/3-5-determinants-and-cramers-rule
+// For 2 equations
 // where a1x + b1y = c1
 // and   a2x + b2y = c2
 // x = Dx/D
@@ -76,34 +78,39 @@ fn part1(lines: []Line, min: f128, max: f128) !u64 {
 // Dy = determinant with constants replacing y column
 // | a1 c1 |
 // | a2 c2 |
+// Apply same approach to 4 equations
+
 fn part2(l: []Line) f128 {
     // zig fmt: off
+    // create the constants and equation attributes for 4 pairs of lines (0,1) (2,3) (4,5) (6,7)
     const c = [4]f128{ l[0].pos[0] * l[0].deltas[1] - l[1].pos[0] * l[1].deltas[1] + l[1].pos[1] * l[1].deltas[0] - l[0].pos[1] * l[0].deltas[0], 
-                      l[2].pos[0] * l[2].deltas[1] - l[3].pos[0] * l[3].deltas[1] + l[3].pos[1] * l[3].deltas[0] - l[2].pos[1] * l[2].deltas[0], 
-                      l[4].pos[0] * l[4].deltas[1] - l[5].pos[0] * l[5].deltas[1] + l[5].pos[1] * l[5].deltas[0] - l[4].pos[1] * l[4].deltas[0], 
-                      l[6].pos[0] * l[6].deltas[1] - l[7].pos[0] * l[7].deltas[1] + l[7].pos[1] * l[7].deltas[0] - l[6].pos[1] * l[6].deltas[0] };
+                       l[2].pos[0] * l[2].deltas[1] - l[3].pos[0] * l[3].deltas[1] + l[3].pos[1] * l[3].deltas[0] - l[2].pos[1] * l[2].deltas[0], 
+                       l[4].pos[0] * l[4].deltas[1] - l[5].pos[0] * l[5].deltas[1] + l[5].pos[1] * l[5].deltas[0] - l[4].pos[1] * l[4].deltas[0], 
+                       l[6].pos[0] * l[6].deltas[1] - l[7].pos[0] * l[7].deltas[1] + l[7].pos[1] * l[7].deltas[0] - l[6].pos[1] * l[6].deltas[0] };
     const M = [4][4]f128{ [4]f128{ l[0].pos[0] - l[1].pos[0], l[1].pos[1] - l[0].pos[1], l[1].deltas[0] - l[0].deltas[0], l[0].deltas[1] - l[1].deltas[1] },
                           [4]f128{ l[2].pos[0] - l[3].pos[0], l[3].pos[1] - l[2].pos[1], l[3].deltas[0] - l[2].deltas[0], l[2].deltas[1] - l[3].deltas[1] },
                           [4]f128{ l[4].pos[0] - l[5].pos[0], l[5].pos[1] - l[4].pos[1], l[5].deltas[0] - l[4].deltas[0], l[4].deltas[1] - l[5].deltas[1] },
                           [4]f128{ l[6].pos[0] - l[7].pos[0], l[7].pos[1] - l[6].pos[1], l[7].deltas[0] - l[6].deltas[0], l[6].deltas[1] - l[7].deltas[1] }};
+    // for the denominator, we need to calculate the determinant of M
     const D = det4x4(M);
     // vars are DRY, DRX, PRY, PRX in that order
+    // calculate the determinants, replacing the appropriate column with the constants
     const DRY = det4x4([4][4]f128{ [4]f128{ c[0], M[0][1], M[0][2], M[0][3] },
                                    [4]f128{ c[1], M[1][1], M[1][2], M[1][3] },
-                       [4]f128{ c[2], M[2][1], M[2][2], M[2][3] },
-                       [4]f128{ c[3], M[3][1], M[3][2], M[3][3] }})/D;
-    const DRX = det4x4([4][4]f128{  [4]f128{ M[0][0], c[0], M[0][2], M[0][3] },
-                                    [4]f128{ M[1][0], c[1], M[1][2], M[1][3] },
-                                    [4]f128{ M[2][0], c[2], M[2][2], M[2][3] },
-                                    [4]f128{ M[3][0], c[3], M[3][2], M[3][3] }})/D;
-    const PRY = det4x4([4][4]f128{  [4]f128{ M[0][0], M[0][1], c[0], M[0][3] },
-                                    [4]f128{ M[1][0], M[1][1], c[1], M[1][3] },
-                                    [4]f128{ M[2][0], M[2][1], c[2], M[2][3] },
-                                    [4]f128{ M[3][0], M[3][1], c[3], M[3][3] }})/D;
-    const PRX = det4x4([4][4]f128{  [4]f128{ M[0][0], M[0][1], M[0][2], c[0] },
-                                    [4]f128{ M[1][0], M[1][1], M[1][2], c[1] },
-                                    [4]f128{ M[2][0], M[2][1], M[2][2], c[2] },
-                                    [4]f128{ M[3][0], M[3][1], M[3][2], c[3] }})/D;
+                                   [4]f128{ c[2], M[2][1], M[2][2], M[2][3] },
+                                   [4]f128{ c[3], M[3][1], M[3][2], M[3][3] }})/D;
+    const DRX = det4x4([4][4]f128{ [4]f128{ M[0][0], c[0], M[0][2], M[0][3] },
+                                   [4]f128{ M[1][0], c[1], M[1][2], M[1][3] },
+                                   [4]f128{ M[2][0], c[2], M[2][2], M[2][3] },
+                                   [4]f128{ M[3][0], c[3], M[3][2], M[3][3] }})/D;
+    const PRY = det4x4([4][4]f128{ [4]f128{ M[0][0], M[0][1], c[0], M[0][3] },
+                                   [4]f128{ M[1][0], M[1][1], c[1], M[1][3] },
+                                   [4]f128{ M[2][0], M[2][1], c[2], M[2][3] },
+                                   [4]f128{ M[3][0], M[3][1], c[3], M[3][3] }})/D;
+    const PRX = det4x4([4][4]f128{ [4]f128{ M[0][0], M[0][1], M[0][2], c[0] },
+                                   [4]f128{ M[1][0], M[1][1], M[1][2], c[1] },
+                                   [4]f128{ M[2][0], M[2][1], M[2][2], c[2] },
+                                   [4]f128{ M[3][0], M[3][1], M[3][2], c[3] }})/D;
     // now solve the time values for the first 2 hailstones
     const t0 : f128 = (l[0].pos[0] - PRX)/(DRX - l[0].deltas[0]);
     const t1 : f128  = (l[1].pos[1] - PRY)/(DRY - l[1].deltas[1]);
@@ -114,7 +121,6 @@ fn part2(l: []Line) f128 {
     
     return PRX + PRY + PRZ;
     // zig fmt: on
-
 }
 // Determinants - see https://quickmath.com/webMathematica3/quickmath/matrices/determinant/basic.jsp
 // Determinant of a 2x2 matrix is product of diagonal elements minus product of off-diagonal elements
