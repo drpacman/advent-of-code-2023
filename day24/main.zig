@@ -128,7 +128,7 @@ fn det2x2(m: [2][2]f128) f128 {
     return m[0][0] * m[1][1] - m[0][1] * m[1][0];
 }
 
-// Determinant of a 3x3 matrix is sum of product of each elemenbt in col1 with determinant of 2x2 matrix formed by removing row and col of that element
+// Determinant of a 3x3 matrix is sum of product of each element in col1 with determinant of 2x2 matrix formed by removing row of that element
 fn det3x3(m: [3][3]f128) f128 {
     const a = m[0][0];
     const b = m[1][0];
@@ -140,7 +140,7 @@ fn det3x3(m: [3][3]f128) f128 {
     // zig fmt: on
 }
 
-// Determinant of a 4x4 matrix is sum of product of each elemenbt in col1 with determinant of 3x3 matrix formed by removing row and col of that element
+// Determinant of a 4x4 matrix is sum of product of each element in col1 with determinant of 3x3 matrix formed by removing row of that element
 fn det4x4(m: [4][4]f128) f128 {
     const a = m[0][0];
     const b = m[1][0];
