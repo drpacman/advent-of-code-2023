@@ -135,7 +135,6 @@ fn rank_hand_part2(hand: Hand) HandRanks {
             }
         },
         2 => {
-            std.debug.print("pair count: {d} for {s}\n", .{ pair_count, hand.cards });
             if (has_three) {
                 rank = HandRanks.FIVE_OF_A_KIND;
             } else if (pair_count == 1) {
